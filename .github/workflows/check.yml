@@ -1,0 +1,31 @@
+name: サイトが見られるか確かめる
+
+on:
+  schedule:
+    - cron: '7,22,37,52 * * * *'   # 15分ごと（混む毎時0分を避ける）
+  workflow_dispatch:
+
+permissions:
+  contents: write   # 月に1回の「生きています」の記録に使う
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: ページと SSL 証明書を確かめる
+        run: bash check.sh sites.txt
+
+      # GitHub は、60日間なにも更新が無い公開リポジトリの定期実行を自動で止める。
+      # 止められないよう、毎月1日の最初の回に空のコミットを1つ残す。
+      - name: 月に1回の記録
+        if: github.event_name == 'schedule'
+        run: |
+          if [ "$(TZ=Asia/Tokyo date +%d%H)" = "0100" ] && [ "$(TZ=Asia/Tokyo date +%M)" -lt 15 ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git commit --allow-empty -m "毎月の記録 $(TZ=Asia/Tokyo date +%Y-%m)"
+            git push
+          fi

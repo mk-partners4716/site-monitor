@@ -1,0 +1,3 @@
+# 確かめるページ  必ず含まれるはずの文字
+https://mk-partners.co.jp/          MK Partners
+https://mk-partners.co.jp/contact/  wpcf7
